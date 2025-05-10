@@ -242,31 +242,46 @@ most_used_player = filtered_df['saltador'].mode()[0]
 most_used_position = filtered_df['posicion'].mode()[0]
 total_lineouts = filtered_df['cant_line'].count()
 
-col1, col2, col3 = st.columns(3)
+# col1, col2, col3 = st.columns(3)
 
-with col1:
-    st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-title">Saltador mas utilizado</div>
-            <div class="kpi-value">{most_used_player}</div>
+# 🚨 Responsive KPI layout (mobile-friendly)
+with st.container():
+    st.markdown("""
+    <style>
+    .kpi-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: space-between;
+        margin-bottom: 30px;
+    }
+    .kpi-card-wrapper {
+        flex: 1 1 300px;
+        min-width: 240px;
+    }
+    </style>
+    <div class="kpi-container">
+        <div class="kpi-card-wrapper">
+            <div class="kpi-card">
+                <div class="kpi-title">Saltador más utilizado</div>
+                <div class="kpi-value">""" + str(most_used_player) + """</div>
+            </div>
         </div>
+        <div class="kpi-card-wrapper">
+            <div class="kpi-card">
+                <div class="kpi-title">Posición más utilizada</div>
+                <div class="kpi-value">""" + str(most_used_position) + """</div>
+            </div>
+        </div>
+        <div class="kpi-card-wrapper">
+            <div class="kpi-card">
+                <div class="kpi-title">Cant. Lines</div>
+                <div class="kpi-value">""" + str(total_lineouts) + """</div>
+            </div>
+        </div>
+    </div>
     """, unsafe_allow_html=True)
 
-with col2:
-    st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-title">Posicion mas utilizada</div>
-            <div class="kpi-value">{most_used_position}</div>
-        </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-title">Cant. Lines</div>
-            <div class="kpi-value">{total_lineouts}</div>
-        </div>
-    """, unsafe_allow_html=True)
 
 # 📊 Lineouts Overview Section
 # st.subheader("Lineouts Overview")

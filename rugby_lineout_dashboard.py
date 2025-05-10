@@ -212,12 +212,12 @@ for idx, (label, (col_name, session_key)) in enumerate(filtros_config.items()):
         value_map = dict(zip(options_labels, ["Todos"] + options_raw))
         try:
             index = options_labels.index(
-                st.session_state[session_key].capitalize()
-                if st.session_state[session_key] != "Todos"
-                else "Todos"
-            )
-        except ValueError:
-            index = 0
+            str(st.session_state[session_key]).capitalize()
+            if st.session_state[session_key] != "Todos"
+            else "Todos"
+        )
+    except ValueError:
+        index = 0
         selected_label = st.selectbox(label, options_labels, index=index, key=session_key + "_select")
         st.session_state[session_key] = value_map[selected_label]
 

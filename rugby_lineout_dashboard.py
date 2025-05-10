@@ -27,7 +27,7 @@ def image_to_base64(img_path):
     return base64.b64encode(Path(img_path).read_bytes()).decode()
 
 # ✅ Ruta relativa (ideal que esté en una carpeta tipo /assets dentro del proyecto)
-logo_base64 = image_to_base64("assets/ipr_logo.png")
+logo_base64 = image_to_base64("ipr_logo.png")
 
 # ✅ Título y logo alineados: título a la izquierda, logo a la derecha
 st.markdown(f"""

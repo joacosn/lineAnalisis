@@ -322,19 +322,6 @@ with chart_col1:
 
     st.altair_chart(chart, use_container_width=True)
 
-with divider_col:
-    st.markdown(
-        """
-        <div style='
-            height: 420px;
-            border-left: 3px solid #d3d3d3;
-            margin: auto;
-        '></div>
-        """,
-        unsafe_allow_html=True
-    )
-
-
 # ➤ Chart 2: Lineouts per Player
 with chart_col2:
     st.markdown("#### 🧍 Cant. lines por saltador")
@@ -418,18 +405,6 @@ with left_col:
         }});
         </script>
     """, unsafe_allow_html=True)
-
-with divider_col:
-    st.markdown(
-        """
-        <div style='
-            height: 420px;
-            border-left: 3px solid #d3d3d3;
-            margin: auto;
-        '></div>
-        """,
-        unsafe_allow_html=True
-    )
 
 with right_col:
     selected_zone = st.session_state.selected_zone

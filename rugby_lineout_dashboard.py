@@ -1,6 +1,3 @@
-import streamlit as st
-import pandas as pd
-import plotly.express as px
 import altair as alt
 import numpy as np
 from pathlib import Path
@@ -314,7 +311,7 @@ with chart_col1:
 
     base = alt.Chart(pos_count).mark_bar(size=50).encode(
         x=alt.X('posicion:N', title='Torre',
-            axis=alt.Axis(labelAngle=0, labelColor='#333')),
+            axis=alt.Axis(labelAngle=0, labelColoraxis=alt.Axis(labelAngle=0, labelColor='black', titleColor='black')='#333')),
         y=alt.Y('count:Q', axis=y_axis),
         tooltip=['posicion', 'count']
     )
@@ -322,7 +319,9 @@ with chart_col1:
     text = alt.Chart(pos_count).mark_text(
         align='center',
         baseline='bottom',
-        dy=-5
+        dy=-5,
+        text=alt.Text('count:Q'),
+        color=alt.value('black')  # 🟢 force visibility
     ).encode(
         x='posicion:N',
         y='count:Q',

@@ -87,6 +87,7 @@ if 'zone' not in st.session_state:
     st.session_state.zone = '50-22'
 
 # 9. KPIs
+
 def safe_mode(series: pd.Series):
     vals = series.dropna()
     return vals.mode().iloc[0] if not vals.empty else '—'
@@ -95,11 +96,13 @@ kpi1 = safe_mode(subset['saltador'])
 kpi2 = safe_mode(subset['posicion'])
 kpi3 = int(subset['cant_line'].count())
 
-st.markdown("<div style='display:flex;gap:20px;margin-bottom:30px;'>"
-            f"<div class='kpi-card'><div class='kpi-title'>Saltador más usado</div><div class='kpi-value'>{kpi1}</div></div>"
-            f"<div class='kpi-card'><div class='kpi-title'>Posición más usada</div><div class='kpi-value'>{kpi2}</div></div>"
-            f"<div class='kpi-card'><div class='kpi-title'>Total Lineouts</div><div class='kpi-value'>{kpi3}</div></div>"
-            "</div>", unsafe_allow_html=True)
+st.markdown(
+    "<div style='display:flex;gap:20px;margin-bottom:30px;'>"
+    f"<div class='kpi-card'><div class='kpi-title'>Saltador más usado</div><div class='kpi-value'>{kpi1}</div></div>"
+    f"<div class='kpi-card'><div class='kpi-title'>Posición más usada</div><div class='kpi-value'>{kpi2}</div></div>"
+    f"<div class='kpi-card'><div class='kpi-title'>Total Lineouts</div><div class='kpi-value'>{kpi3}</div></div>"
+    "</div>", unsafe_allow_html=True
+)
 
 # 10. Charts
 col1, _, col2 = st.columns([1, 0.02, 1])
@@ -112,7 +115,7 @@ with col1:
         y=alt.Y('count:Q', title='Cantidad de Lines', axis=alt.Axis(format='d')),
         tooltip=['posicion','count']
     )
-    text = alt.Chart(pos_count).mark_text(dy=-5, color='black').encode(
+    text = alt.Chart(pos_count).mark_text(dy=-5, color='white').encode(
         x='posicion:N', y='count:Q', text=alt.Text('count:Q')
     )
     st.altair_chart((base + text).properties(height=400), use_container_width=True)
@@ -122,11 +125,11 @@ with col2:
     salt_count = subset['saltador'].value_counts().reset_index()
     salt_count.columns = ['saltador','count']
     base2 = alt.Chart(salt_count).mark_bar(color='#F58518').encode(
-        x=alt.X('saltador:N', title='Saltador', axis=alt.Axis(labelAngle=90, labelAlign='left')),
+        x=alt.X('saltador:N', title='Saltador', axis=alt.Axis(labelAngle=-90, labelAlign='right')),
         y=alt.Y('count:Q', title='Cantidad de Lines', axis=alt.Axis(format='d')),
         tooltip=['saltador','count']
     )
-    text2 = alt.Chart(salt_count).mark_text(dy=-5, color='black').encode(
+    text2 = alt.Chart(salt_count).mark_text(dy=-5, color='white').encode(
         x='saltador:N', y='count:Q', text=alt.Text('count:Q')
     )
     st.altair_chart((base2 + text2).properties(height=400), use_container_width=True)

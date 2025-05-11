@@ -92,9 +92,7 @@ def safe_mode(series: pd.Series):
     return vals.mode().iloc[0] if not vals.empty else '—'
 
 kpi1 = safe_mode(subset['saltador'])
-
 kpi2 = safe_mode(subset['posicion'])
-
 kpi3 = int(subset['cant_line'].count())
 
 st.markdown("<div style='display:flex;gap:20px;margin-bottom:30px;'>"
@@ -109,12 +107,12 @@ with col1:
     st.subheader('Lines por Posición')
     pos_count = subset['posicion'].value_counts().reset_index()
     pos_count.columns = ['posicion', 'count']
-    base = alt.Chart(pos_count).mark_bar().encode(
+    base = alt.Chart(pos_count).mark_bar(color='#4C78A8').encode(
         x=alt.X('posicion:N', title='Torre', axis=alt.Axis(labelAngle=0)),
         y=alt.Y('count:Q', title='Cantidad de Lines', axis=alt.Axis(format='d')),
         tooltip=['posicion','count']
     )
-    text = alt.Chart(pos_count).mark_text(dy=-5).encode(
+    text = alt.Chart(pos_count).mark_text(dy=-5, color='black').encode(
         x='posicion:N', y='count:Q', text=alt.Text('count:Q')
     )
     st.altair_chart((base + text).properties(height=400), use_container_width=True)
@@ -123,12 +121,12 @@ with col2:
     st.subheader('Lines por Saltador')
     salt_count = subset['saltador'].value_counts().reset_index()
     salt_count.columns = ['saltador','count']
-    base2 = alt.Chart(salt_count).mark_bar().encode(
-        x=alt.X('saltador:N', title='Saltador', axis=alt.Axis(labelAngle=90)),
+    base2 = alt.Chart(salt_count).mark_bar(color='#F58518').encode(
+        x=alt.X('saltador:N', title='Saltador', axis=alt.Axis(labelAngle=90, labelAlign='left')),
         y=alt.Y('count:Q', title='Cantidad de Lines', axis=alt.Axis(format='d')),
         tooltip=['saltador','count']
     )
-    text2 = alt.Chart(salt_count).mark_text(dy=-5).encode(
+    text2 = alt.Chart(salt_count).mark_text(dy=-5, color='black').encode(
         x='saltador:N', y='count:Q', text=alt.Text('count:Q')
     )
     st.altair_chart((base2 + text2).properties(height=400), use_container_width=True)
@@ -167,5 +165,4 @@ display = filtered.rename(columns={
     'cant_line':'Cant Lines','desc':'Descripción','tipo_line':'Tipo'
 })
 cols_order = ['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']
-# Show table
 st.dataframe(display[cols_order].reset_index(drop=True))

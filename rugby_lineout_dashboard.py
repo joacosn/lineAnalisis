@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 import numpy as np
+import plotly.express as px
 from pathlib import Path
 import base64
 
@@ -103,40 +104,56 @@ st.markdown("<div style='display:flex;gap:20px;margin-bottom:30px;'>"
             "</div>", unsafe_allow_html=True)
 
 # 10. Charts
-tab1, _, tab2 = st.columns([1, 0.02, 1])
-with tab1:
+col1, _, col2 = st.columns([1, 0.02, 1])
+with col1:
     st.subheader('Lines por Posición')
     pos_count = subset['posicion'].value_counts().reset_index()
     pos_count.columns = ['posicion', 'count']
-    chart = alt.Chart(pos_count).mark_bar().encode(x='posicion:N', y='count:Q', tooltip=['posicion','count'])
-    st.altair_chart(chart, use_container_width=True)
+    base = alt.Chart(pos_count).mark_bar().encode(
+        x=alt.X('posicion:N', title='Torre', axis=alt.Axis(labelAngle=0)),
+        y=alt.Y('count:Q', title='Cantidad de Lines', axis=alt.Axis(format='d')),
+        tooltip=['posicion','count']
+    )
+    text = alt.Chart(pos_count).mark_text(dy=-5).encode(
+        x='posicion:N', y='count:Q', text=alt.Text('count:Q')
+    )
+    st.altair_chart((base + text).properties(height=400), use_container_width=True)
 
-with tab2:
+with col2:
     st.subheader('Lines por Saltador')
     salt_count = subset['saltador'].value_counts().reset_index()
     salt_count.columns = ['saltador','count']
-    chart2 = alt.Chart(salt_count).mark_bar().encode(x='saltador:N', y='count:Q', tooltip=['saltador','count'])
-    st.altair_chart(chart2, use_container_width=True)
+    base2 = alt.Chart(salt_count).mark_bar().encode(
+        x=alt.X('saltador:N', title='Saltador', axis=alt.Axis(labelAngle=90)),
+        y=alt.Y('count:Q', title='Cantidad de Lines', axis=alt.Axis(format='d')),
+        tooltip=['saltador','count']
+    )
+    text2 = alt.Chart(salt_count).mark_text(dy=-5).encode(
+        x='saltador:N', y='count:Q', text=alt.Text('count:Q')
+    )
+    st.altair_chart((base2 + text2).properties(height=400), use_container_width=True)
 
-# 11. Zone pie chart
+# 11. Zone pie chart (Plotly for values + perc)
 st.subheader('Elección de torre por zona')
-cols = st.columns([1,3])
-with cols[0]:
+left, right = st.columns([1,3])
+with left:
     for z in ['50-22','22-5','5']:
         if st.button(z): st.session_state.zone = z
-with cols[1]:
-    data_zone = subset[subset['ubicacion'] == st.session_state.zone]
-    if not data_zone.empty:
-        pie = alt.Chart(data_zone['posicion'].value_counts().reset_index()).mark_arc(innerRadius=50).encode(
-            theta='count:Q', color='posicion:N', tooltip=['posicion','count']
-        )
-        st.altair_chart(pie, use_container_width=True)
-    else:
+with right:
+    zone_df = subset[subset['ubicacion'] == st.session_state.zone]
+    if zone_df.empty:
         st.info('Sin datos para esta zona.')
+    else:
+        pie_data = zone_df['posicion'].value_counts().reset_index()
+        pie_data.columns = ['posicion','count']
+        fig = px.pie(pie_data, names='posicion', values='count', hole=0.4, title=f'Torres en {st.session_state.zone}m')
+        fig.update_traces(textinfo='percent+value', textposition='inside', textfont_size=14)
+        fig.update_layout(legend_title_text='Torre')
+        st.plotly_chart(fig, use_container_width=True)
 
 # 12. Tabla de detalle
 st.subheader('Detalle Lines')
-filters = {'Tipo': 'tipo_line', 'Torre':'posicion', 'Saltador':'saltador','Zona':'ubicacion'}
+filters = {'Tipo':'tipo_line','Torre':'posicion','Saltador':'saltador','Zona':'ubicacion'}
 filtered = subset.copy()
 cols = st.columns(len(filters))
 for (label, col), col_obj in zip(filters.items(), cols):
@@ -144,6 +161,11 @@ for (label, col), col_obj in zip(filters.items(), cols):
     sel = col_obj.selectbox(label, opts, key=col)
     if sel != 'Todos': filtered = filtered[filtered[col]==sel]
 
-display = filtered.rename(columns={'posicion':'Torre','saltador':'Saltador','ubicacion':'Zona','cant_line':'Cant Lines','desc':'Descripción','tipo_line':'Tipo'})
-cols_order = ['Torre','Saltador','Zona','cant_line','Descripción','Tipo']
-st.dataframe(display[cols_order])
+# Rename and order columns
+display = filtered.rename(columns={
+    'posicion':'Torre','saltador':'Saltador','ubicacion':'Zona',
+    'cant_line':'Cant Lines','desc':'Descripción','tipo_line':'Tipo'
+})
+cols_order = ['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']
+# Show table
+st.dataframe(display[cols_order].reset_index(drop=True))

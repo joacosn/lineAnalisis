@@ -9,7 +9,7 @@ import base64
 # 1. Page configuration
 st.set_page_config(page_title="Análisis Lines 2025", layout="wide")
 
-# 2. Inject custom styles and fonts + custom button styling
+# 2. Inject custom styles and fonts + button styling
 CUSTOM_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 html, body, [class*="css"] {
@@ -26,7 +26,6 @@ html, body, [class*="css"] {
 }
 .kpi-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 .kpi-value { font-size: 36px; font-weight: 700; }
-.table-container { overflow-x: auto; }
 .custom-table { border-collapse: collapse; width: 100%; font-size: 14px; }
 .custom-table th, .custom-table td { padding: 8px; border-bottom: 1px solid #ddd; white-space: nowrap; }
 .custom-table th { background-color: #f2f2f2; text-align: left; }
@@ -34,18 +33,10 @@ html, body, [class*="css"] {
     .custom-table th { background-color: #333; color: #fff; }
     .custom-table td { background-color: #111; color: #eee; border-color: #444; }
 }
-/* Zone selector radio styling */
-.zone-radio label {
-    display: inline-block;
+/* Zone buttons styling */
+.zone-btn {
     width: 80px;
-    text-align: center;
-    padding: 6px 0;
-    margin-right: 8px;
-    border-radius: 6px;
-    cursor: pointer;
-}
-.zone-radio input[type="radio"]:checked + label {
-    background-color: rgba(0, 123, 255, 0.1);
+    margin-bottom: 8px;
 }
 """
 st.markdown(f"<style>{CUSTOM_CSS}</style>", unsafe_allow_html=True)
@@ -146,25 +137,25 @@ with col2:
     )
     st.altair_chart((base2 + text2).properties(height=400), use_container_width=True)
 
-# 11. Zone selector and pie chart
+# 11. Zone selector buttons and pie chart in two columns
 st.subheader('Elección de torre por zona')
-zones = ['50-22','22-5','5']
-# Horizontal radio with custom styles
-st.markdown("<div class='zone-radio'>", unsafe_allow_html=True)
-selected = st.radio("", zones, index=zones.index(st.session_state.zone), horizontal=True)
-st.markdown("</div>", unsafe_allow_html=True)
-st.session_state.zone = selected
-
-zone_df = subset[subset['ubicacion'] == st.session_state.zone]
-if zone_df.empty:
-    st.info('Sin datos para esta zona.')
-else:
-    pie_data = zone_df['posicion'].value_counts().reset_index()
-    pie_data.columns = ['posicion','count']
-    fig = px.pie(pie_data, names='posicion', values='count', hole=0.4, title=f'Torres en {st.session_state.zone}m')
-    fig.update_traces(textinfo='percent+value', textposition='inside', textfont_size=14)
-    fig.update_layout(legend_title_text='Torre')
-    st.plotly_chart(fig, use_container_width=True)
+btn_col, pie_col = st.columns([1,3])
+with btn_col:
+    for z in ['50-22','22-5','5']:
+        if st.button(z, key=z, help="Seleccionar zona", args=None, on_click=lambda z=z: st.session_state.update({'zone': z}), kwargs=None):
+            pass
+        st.markdown(f"<style>.stButton > button#{z} {{ width: 80px; }}</style>", unsafe_allow_html=True)
+with pie_col:
+    zone_df = subset[subset['ubicacion'] == st.session_state.zone]
+    if zone_df.empty:
+        st.info('Sin datos para esta zona.')
+    else:
+        pie_data = zone_df['posicion'].value_counts().reset_index()
+        pie_data.columns = ['posicion','count']
+        fig = px.pie(pie_data, names='posicion', values='count', hole=0.4, title=f'Torres en {st.session_state.zone}m')
+        fig.update_traces(textinfo='percent+value', textposition='inside', textfont_size=14)
+        fig.update_layout(legend_title_text='Torre')
+        st.plotly_chart(fig, use_container_width=True)
 
 # 12. Tabla de detalle
 st.subheader('Detalle Lines')
@@ -182,5 +173,4 @@ display = filtered.rename(columns={
     'cant_line':'Cant Lines','desc':'Descripción','tipo_line':'Tipo'
 })
 cols_order = ['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']
-# Show table
 st.dataframe(display[cols_order].reset_index(drop=True))

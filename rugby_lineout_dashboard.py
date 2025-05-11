@@ -33,14 +33,14 @@ html, body, [class*="css"] {
     .custom-table th { background-color: #333; color: #fff; }
     .custom-table td { background-color: #111; color: #eee; border-color: #444; }
 }
-/* Uniform button width for zone selector */
-.stButton > button {
-    width: 100px !important;
+/* Uniform width for all buttons */
+.stButton button {
+    min-width: 100px !important;
 }
 """
 st.markdown(f"<style>{CUSTOM_CSS}</style>", unsafe_allow_html=True)
 
-# 3. Dark-mode inversion (optional)
+# 3. Dark-mode inversion (optional) Dark-mode inversion (optional)
 st.markdown(
     "<style>@media (prefers-color-scheme: dark) {html {filter: invert(1) hue-rotate(180deg);} img, video, iframe {filter: invert(1) hue-rotate(180deg)!important;}}</style>",
     unsafe_allow_html=True

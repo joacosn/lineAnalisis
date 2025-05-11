@@ -33,10 +33,9 @@ html, body, [class*="css"] {
     .custom-table th { background-color: #333; color: #fff; }
     .custom-table td { background-color: #111; color: #eee; border-color: #444; }
 }
-/* Zone buttons styling */
-.zone-btn {
-    width: 80px;
-    margin-bottom: 8px;
+/* Uniform button width for zone selector */
+.stButton > button {
+    width: 100px !important;
 }
 """
 st.markdown(f"<style>{CUSTOM_CSS}</style>", unsafe_allow_html=True)

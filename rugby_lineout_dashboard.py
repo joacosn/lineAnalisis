@@ -87,7 +87,6 @@ if 'zone' not in st.session_state:
     st.session_state.zone = '50-22'
 
 # 9. KPIs
-
 def safe_mode(series: pd.Series):
     vals = series.dropna()
     return vals.mode().iloc[0] if not vals.empty else '—'
@@ -125,7 +124,7 @@ with col2:
     salt_count = subset['saltador'].value_counts().reset_index()
     salt_count.columns = ['saltador','count']
     base2 = alt.Chart(salt_count).mark_bar(color='#F58518').encode(
-        x=alt.X('saltador:N', title='Saltador', axis=alt.Axis(labelAngle=-90, labelAlign='right')),
+        x=alt.X('saltador:N', title='Saltador', axis=alt.Axis(labelAngle=0, labelAlign='center')),
         y=alt.Y('count:Q', title='Cantidad de Lines', axis=alt.Axis(format='d')),
         tooltip=['saltador','count']
     )

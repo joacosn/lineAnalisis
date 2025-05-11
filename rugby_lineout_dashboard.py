@@ -9,7 +9,7 @@ import base64
 # 1. Page configuration
 st.set_page_config(page_title="Análisis Lines 2025", layout="wide")
 
-# 2. Inject custom styles and fonts
+# 2. Inject custom styles and fonts + custom button styling
 CUSTOM_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 html, body, [class*="css"] {
@@ -33,6 +33,19 @@ html, body, [class*="css"] {
 @media (prefers-color-scheme: dark) {
     .custom-table th { background-color: #333; color: #fff; }
     .custom-table td { background-color: #111; color: #eee; border-color: #444; }
+}
+/* Zone selector radio styling */
+.zone-radio label {
+    display: inline-block;
+    width: 80px;
+    text-align: center;
+    padding: 6px 0;
+    margin-right: 8px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.zone-radio input[type="radio"]:checked + label {
+    background-color: rgba(0, 123, 255, 0.1);
 }
 """
 st.markdown(f"<style>{CUSTOM_CSS}</style>", unsafe_allow_html=True)
@@ -124,7 +137,7 @@ with col2:
     salt_count = subset['saltador'].value_counts().reset_index()
     salt_count.columns = ['saltador','count']
     base2 = alt.Chart(salt_count).mark_bar(color='#F58518').encode(
-        x=alt.X('saltador:N', title='Saltador', axis=alt.Axis(labelAngle=0, labelAlign='center')),
+        x=alt.X('saltador:N', title='Saltador', axis=alt.Axis(labelAngle=0)),
         y=alt.Y('count:Q', title='Cantidad de Lines', axis=alt.Axis(format='d')),
         tooltip=['saltador','count']
     )
@@ -133,23 +146,25 @@ with col2:
     )
     st.altair_chart((base2 + text2).properties(height=400), use_container_width=True)
 
-# 11. Zone pie chart (Plotly for values + perc)
+# 11. Zone selector and pie chart
 st.subheader('Elección de torre por zona')
-left, right = st.columns([1,3])
-with left:
-    for z in ['50-22','22-5','5']:
-        if st.button(z): st.session_state.zone = z
-with right:
-    zone_df = subset[subset['ubicacion'] == st.session_state.zone]
-    if zone_df.empty:
-        st.info('Sin datos para esta zona.')
-    else:
-        pie_data = zone_df['posicion'].value_counts().reset_index()
-        pie_data.columns = ['posicion','count']
-        fig = px.pie(pie_data, names='posicion', values='count', hole=0.4, title=f'Torres en {st.session_state.zone}m')
-        fig.update_traces(textinfo='percent+value', textposition='inside', textfont_size=14)
-        fig.update_layout(legend_title_text='Torre')
-        st.plotly_chart(fig, use_container_width=True)
+zones = ['50-22','22-5','5']
+# Horizontal radio with custom styles
+st.markdown("<div class='zone-radio'>", unsafe_allow_html=True)
+selected = st.radio("", zones, index=zones.index(st.session_state.zone), horizontal=True)
+st.markdown("</div>", unsafe_allow_html=True)
+st.session_state.zone = selected
+
+zone_df = subset[subset['ubicacion'] == st.session_state.zone]
+if zone_df.empty:
+    st.info('Sin datos para esta zona.')
+else:
+    pie_data = zone_df['posicion'].value_counts().reset_index()
+    pie_data.columns = ['posicion','count']
+    fig = px.pie(pie_data, names='posicion', values='count', hole=0.4, title=f'Torres en {st.session_state.zone}m')
+    fig.update_traces(textinfo='percent+value', textposition='inside', textfont_size=14)
+    fig.update_layout(legend_title_text='Torre')
+    st.plotly_chart(fig, use_container_width=True)
 
 # 12. Tabla de detalle
 st.subheader('Detalle Lines')
@@ -167,4 +182,5 @@ display = filtered.rename(columns={
     'cant_line':'Cant Lines','desc':'Descripción','tipo_line':'Tipo'
 })
 cols_order = ['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']
+# Show table
 st.dataframe(display[cols_order].reset_index(drop=True))

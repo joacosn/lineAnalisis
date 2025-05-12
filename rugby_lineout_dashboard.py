@@ -122,7 +122,7 @@ if not zone_counts.empty:
     totals = zone_counts.groupby('ubicacion')['count'].sum().reset_index()
     labels = alt.Chart(totals).mark_text(dy=-10, color='black').encode(
         x='ubicacion:N',
-        y=alt.Value(1),  # top of stack (100%)
+        y=alt.value(1),  # top of stack (100%)
         text=alt.Text('count:Q', format='d')
     )
     st.altair_chart((stacked+labels).properties(height=350), use_container_width=True)

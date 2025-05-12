@@ -9,192 +9,125 @@ import base64
 # 1. Page configuration
 st.set_page_config(page_title="Análisis Lines 2025", layout="wide")
 
-# 2. Inject custom styles and fonts + button styling
+# 2. Styles and fonts
 CUSTOM_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
-html, body, [class*="css"] {
-    font-family: 'Inter', sans-serif;
-}
-.kpi-container {
-    display: flex;
-    gap: 20px;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-}
-.kpi-container .kpi-card {
-    flex: 1 1 0;
-    min-width: 0;
-}
-@media (max-width: 600px) {
-    .kpi-container {
-        flex-direction: column;
-    }
-}
-.kpi-card {
-    padding: 20px;
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+.kpi-container { display: flex; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+.kpi-container .kpi-card { flex: 1 1 0; min-width: 0; }
+@media (max-width: 600px) { .kpi-container { flex-direction: column; } }
+.kpi-card { padding: 20px; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 .kpi-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 .kpi-value { font-size: 36px; font-weight: 700; }
-.custom-table { border-collapse: collapse; width: 100%; font-size: 14px; }
-.custom-table th, .custom-table td { padding: 8px; border-bottom: 1px solid #ddd; white-space: nowrap; }
-.custom-table th { background-color: #f2f2f2; text-align: left; }
-@media (prefers-color-scheme: dark) {
-    .custom-table th { background-color: #333; color: #fff; }
-    .custom-table td { background-color: #111; color: #eee; border-color: #444; }
-}
-/* Uniform width for all buttons */
-.stButton button {
-    min-width: 100px !important;
-}
+.stButton>button { min-width: 100px !important; }
 """
 st.markdown(f"<style>{CUSTOM_CSS}</style>", unsafe_allow_html=True)
 
-# 3. Dark-mode inversion (optional) Dark-mode inversion (optional)
+# 3. Dark-mode inversion (optional)
 st.markdown(
     "<style>@media (prefers-color-scheme: dark) {html {filter: invert(1) hue-rotate(180deg);} img, video, iframe {filter: invert(1) hue-rotate(180deg)!important;}}</style>",
     unsafe_allow_html=True
 )
 
-# 4. Utility to encode image as base64
+# 4. Load logo
 @st.cache_data
 def encode_image(path: str) -> str:
-    data = Path(path).read_bytes()
-    return base64.b64encode(data).decode()
+    return base64.b64encode(Path(path).read_bytes()).decode()
 
-# 5. Header with logo
 try:
-    logo_b64 = encode_image('ipr_logo.png')
+    logo = encode_image('ipr_logo.png')
     st.markdown(
-        f"<div style='display:flex;justify-content:space-between;align-items:center;'><h1>Analisis Lines 2025</h1><img src='data:image/png;base64,{logo_b64}' height='55'></div>",
+        f"<div style='display:flex;justify-content:space-between;align-items:center;'><h1>Analisis Lines 2025</h1><img src='data:image/png;base64,{logo}' height='55'></div>",
         unsafe_allow_html=True
     )
 except FileNotFoundError:
     st.title("Analisis Lines 2025")
 
-# 6. Load data
-def load_data(filepath: str = 'Lines_IPR.xlsx') -> pd.DataFrame:
+# 5. Load data
+def load_data():
     try:
-        return pd.read_excel(filepath)
+        return pd.read_excel('Lines_IPR.xlsx')
     except Exception as e:
-        st.error(f"Error al leer archivo: {e}")
+        st.error(f"Error al cargar datos: {e}")
         return pd.DataFrame()
 
 df = load_data()
-if df.empty:
-    st.stop()
+if df.empty: st.stop()
 
-# 7. Filters for partido and tipo_line
+# 6. Filters
 partidos = sorted(df['partido'].dropna().unique())
-selected_match = st.selectbox('Selecciona un partido', partidos)
-subset = df[df['partido'] == selected_match]
+sel_partido = st.selectbox('Selecciona un partido', partidos)
+df = df[df['partido']==sel_partido]
+if 'tipo_line' in df:
+    tipos = ['Todos'] + sorted(df['tipo_line'].dropna().unique())
+    sel_tipo = st.selectbox('Tipo de Line', tipos)
+    if sel_tipo!='Todos': df = df[df['tipo_line']==sel_tipo]
 
-if 'tipo_line' in subset.columns:
-    tipos = ['Todos'] + sorted(subset['tipo_line'].dropna().unique())
-    tipo_sel = st.selectbox('Tipo de Line', tipos)
-    if tipo_sel != 'Todos':
-        subset = subset[subset['tipo_line'] == tipo_sel]
+# 7. Session for zone
+defaul = '50-22'
+if 'zone' not in st.session_state: st.session_state.zone = defaul
 
-# 8. Session state for zone selection
-if 'zone' not in st.session_state:
-    st.session_state.zone = '50-22'
+# 8. KPIs
+def safe_mode(s):
+    s2 = s.dropna()
+    return s2.mode().iloc[0] if not s2.empty else '—'
 
-# 9. KPIs
-# Calculate KPI values
-def safe_mode(series: pd.Series):
-    vals = series.dropna()
-    return vals.mode().iloc[0] if not vals.empty else '—'
-
-kpi1 = safe_mode(subset['saltador'])
-kpi2 = safe_mode(subset['posicion'])
-kpi3 = int(subset['cant_line'].count())
-
-# KPI container: responsive—one row desktop, stacked mobile
+k1, k2, k3 = safe_mode(df['saltador']), safe_mode(df['posicion']), df['cant_line'].count()
 st.markdown(
     "<div class='kpi-container'>"
-    f"<div class='kpi-card'><div class='kpi-title'>Saltador más usado</div><div class='kpi-value'>{kpi1}</div></div>"
-    f"<div class='kpi-card'><div class='kpi-title'>Posición más usada</div><div class='kpi-value'>{kpi2}</div></div>"
-    f"<div class='kpi-card'><div class='kpi-title'>Total Lineouts</div><div class='kpi-value'>{kpi3}</div></div>"
+    f"<div class='kpi-card'><div class='kpi-title'>Saltador más usado</div><div class='kpi-value'>{k1}</div></div>"
+    f"<div class='kpi-card'><div class='kpi-title'>Posición más usada</div><div class='kpi-value'>{k2}</div></div>"
+    f"<div class='kpi-card'><div class='kpi-title'>Total Lineouts</div><div class='kpi-value'>{k3}</div></div>"
     "</div>", unsafe_allow_html=True
 )
-# 10. Charts
-col1, _, col2 = st.columns([1, 0.02, 1])
-with col1:
+
+# 9. Bar Charts
+c1, _, c2 = st.columns([1,0.02,1])
+with c1:
     st.subheader('Lines por Posición')
-    pos_count = subset['posicion'].value_counts().reset_index()
-    pos_count.columns = ['posicion', 'count']
-    base = alt.Chart(pos_count).mark_bar(color='#4C78A8').encode(
-        x=alt.X('posicion:N', title='Torre', axis=alt.Axis(labelAngle=0)),
-        y=alt.Y('count:Q', title='Cantidad de Lines', axis=alt.Axis(format='d')),
-        tooltip=['posicion','count']
+    pc = df['posicion'].value_counts().reset_index(); pc.columns=['pos','cnt']
+    chart = alt.Chart(pc).mark_bar(color='#4C78A8').encode(
+        x=alt.X('pos:N', title='Torre', axis=alt.Axis(labelAngle=0)),
+        y=alt.Y('cnt:Q', title='Cantidad', axis=alt.Axis(format='d'))
     )
-    text = alt.Chart(pos_count).mark_text(dy=-5, color='white').encode(
-        x='posicion:N', y='count:Q', text=alt.Text('count:Q')
-    )
-    st.altair_chart((base + text).properties(height=400), use_container_width=True)
-
-with col2:
+    text=chart.mark_text(dy=-5,color='white').encode(text='cnt:Q')
+    st.altair_chart((chart+text).properties(height=400),use_container_width=True)
+with c2:
     st.subheader('Lines por Saltador')
-    salt_count = subset['saltador'].value_counts().reset_index()
-    salt_count.columns = ['saltador','count']
-    base2 = alt.Chart(salt_count).mark_bar(color='#F58518').encode(
-        x=alt.X('saltador:N', title='Saltador', axis=alt.Axis(labelAngle=0)),
-        y=alt.Y('count:Q', title='Cantidad de Lines', axis=alt.Axis(format='d')),
-        tooltip=['saltador','count']
+    sc = df['saltador'].value_counts().reset_index(); sc.columns=['salt','cnt']
+    chart2 = alt.Chart(sc).mark_bar(color='#F58518').encode(
+        x=alt.X('salt:N',title='Saltador',axis=alt.Axis(labelAngle=0)),
+        y=alt.Y('cnt:Q',title='Cantidad',axis=alt.Axis(format='d'))
     )
-    text2 = alt.Chart(salt_count).mark_text(dy=-5, color='white').encode(
-        x='saltador:N', y='count:Q', text=alt.Text('count:Q')
-    )
-    st.altair_chart((base2 + text2).properties(height=400), use_container_width=True)
+    text2=chart2.mark_text(dy=-5,color='white').encode(text='cnt:Q')
+    st.altair_chart((chart2+text2).properties(height=400),use_container_width=True)
 
-# 11. Zone selector and pie chart side by side
-container = st.container()
-with container:
-    # Header and layout columns
-    header_col, pie_header_col = st.columns([1,3])
-    with header_col:
-        st.subheader('Selecciona la zona de la cancha')
-    with pie_header_col:
-        # placeholder to align header
-        st.write("")
-    # Buttons and pie
-    btn_col, pie_col = st.columns([1,3])
-    with btn_col:
-        for z in ['50-22','22-5','5']:
-            is_selected = (st.session_state.zone == z)
-            btn_style = "" if not is_selected else "background-color: rgba(0,123,255,0.1);"
-            st.markdown(f"<button style='width: 200px; margin-bottom:8px; {btn_style}' onclick=\"window.dispatchEvent(new CustomEvent('streamlit:triggerButton', {{}},{{detail:{{key:'{z}'}}}}))\">{z}</button>", unsafe_allow_html=True)
-    with pie_col:
-        st.markdown("<div style='display:flex;flex-direction:column;align-items:center;margin-left:40px;'>", unsafe_allow_html=True)
-        st.markdown(f"<h3>Torres en {st.session_state.zone}m</h3>", unsafe_allow_html=True)
-        zone_df = subset[subset['ubicacion'] == st.session_state.zone]
-        if zone_df.empty:
-            st.info('Sin datos para esta zona.')
-        else:
-            pie_data = zone_df['posicion'].value_counts().reset_index()
-            pie_data.columns = ['posicion','count']
-            fig = px.pie(pie_data, names='posicion', values='count', hole=0.4)
-            fig.update_traces(textinfo='percent+value', textposition='inside', textfont_size=14)
-            fig.update_layout(showlegend=True, legend_title_text='Torre', margin=dict(l=0, r=0, t=0, b=0))
-            st.plotly_chart(fig, use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
-# 12. Tabla de detalle. Tabla de detalle. Tabla de detalle Tabla de detalle
+# 10. Zone selector + Pie
+st.subheader('Selecciona la zona de la cancha')
+btns, piec = st.columns([1,3])
+with btns:
+    for z in ['50-22','22-5','5']:
+        if st.button(z): st.session_state.zone=z
+with piec:
+    st.subheader(f'Torres en {st.session_state.zone}m')
+    zd = df[df['ubicacion']==st.session_state.zone]
+    if zd.empty:
+        st.info('Sin datos para esta zona.')
+    else:
+        pdata=zd['posicion'].value_counts().reset_index();pdata.columns=['pos','cnt']
+        fig=px.pie(pdata,names='pos',values='cnt',hole=0.4)
+        fig.update_traces(textinfo='percent+value',textposition='inside')
+        st.plotly_chart(fig,use_container_width=True)
+
+# 11. Tabla
 st.subheader('Detalle Lines')
-filters = {'Tipo':'tipo_line','Torre':'posicion','Saltador':'saltador','Zona':'ubicacion'}
-filtered = subset.copy()
-cols = st.columns(len(filters))
-for (label, col), col_obj in zip(filters.items(), cols):
-    opts = ['Todos'] + sorted(subset[col].dropna().unique())
-    sel = col_obj.selectbox(label, opts, key=col)
-    if sel != 'Todos': filtered = filtered[filtered[col]==sel]
+filters={'Tipo':'tipo_line','Torre':'posicion','Saltador':'saltador','Zona':'ubicacion'}
+tab=df.copy()
+cols=st.columns(len(filters))
+for (lbl,cn),col in zip(filters.items(),cols):
+    opts=['Todos']+sorted(df[cn].dropna().unique())
+    sel=col.selectbox(lbl,opts)
+    if sel!='Todos': tab=tab[tab[cn]==sel]
 
-# Rename and order columns
-display = filtered.rename(columns={
-    'posicion':'Torre','saltador':'Saltador','ubicacion':'Zona',
-    'cant_line':'Cant Lines','desc':'Descripción','tipo_line':'Tipo'
-})
-cols_order = ['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']
-st.dataframe(display[cols_order].reset_index(drop=True))
+tab=tab.rename(columns={'posicion':'Torre','saltador':'Saltador','ubicacion':'Zona','cant_line':'Cant Lines','desc':'Descripción','tipo_line':'Tipo'})
+st.dataframe(tab[['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']].reset_index(drop=True))

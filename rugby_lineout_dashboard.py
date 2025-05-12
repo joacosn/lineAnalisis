@@ -119,8 +119,8 @@ if not zone_counts.empty:
         color=alt.Color(f'{player_col}:N', title='Jugadores'),
         tooltip=['ubicacion', player_col, 'count']
     )
-    # Text labels centered in each segment
-    text = alt.Chart(zone_counts).mark_text(color='black', size=12).encode(
+    # Text labels centered in each segment (in white for contrast)
+    text = alt.Chart(zone_counts).mark_text(color='white', size=12).encode(
         x=alt.X('ubicacion:N'),
         y=alt.Y('count:Q', stack='center'),
         text=alt.Text('count:Q', format='d')

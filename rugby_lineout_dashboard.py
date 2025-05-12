@@ -114,6 +114,10 @@ zone_counts = df_chart.groupby(['ubicacion', player_col]).size().reset_index(nam
 if not zone_counts.empty:
     base = alt.Chart(zone_counts).mark_bar().encode(
         x=alt.X('ubicacion:N', title='Zona'),
+        y=alt.Y('count:Q', title=None, axis=None, stack='zero'),
+        color=alt.Color(f'{player_col}:O', title='Jugadores'),
+        tooltip=['ubicacion', player_col, 'count']
+    ),
         y=alt.Y('count:Q', title=None, axis=None),
         color=alt.Color(f'{player_col}:N', title='Jugadores'),
         tooltip=['ubicacion', player_col, 'count']

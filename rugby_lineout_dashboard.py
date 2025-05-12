@@ -121,15 +121,36 @@ with piec:
         fig = px.pie(pdata, names='pos', values='cnt', hole=0.4)
         fig.update_traces(textinfo='percent+value', textposition='inside')
         st.plotly_chart(fig, use_container_width=True)
-# 11. Tabla. Tabla. Tabla
+# 11. Detalle Lines con filtros en cascada
 st.subheader('Detalle Lines')
-filters={'Tipo':'tipo_line','Torre':'posicion','Saltador':'saltador','Zona':'ubicacion'}
-tab=df.copy()
-cols=st.columns(len(filters))
-for (lbl,cn),col in zip(filters.items(),cols):
-    opts=['Todos']+sorted(df[cn].dropna().unique())
-    sel=col.selectbox(lbl,opts)
-    if sel!='Todos': tab=tab[tab[cn]==sel]
+# Partimos de subset (ya filtrado por partido, tipo de line)
+filtered_table = subset.copy()
 
-tab=tab.rename(columns={'posicion':'Torre','saltador':'Saltador','ubicacion':'Zona','cant_line':'Cant Lines','desc':'Descripción','tipo_line':'Tipo'})
-st.dataframe(tab[['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']].reset_index(drop=True))
+# Definimos los filtros en orden
+table_filters = [
+    ('Tipo','tipo_line'),
+    ('Torre','posicion'),
+    ('Saltador','saltador'),
+    ('Zona','ubicacion')
+]
+cols = st.columns(len(table_filters))
+selections = {}
+for (label, col_name), col in zip(table_filters, cols):
+    # Generar opciones dinámicas basadas en filtered_table actual
+    opts = ['Todos'] + sorted(filtered_table[col_name].dropna().unique())
+    sel = col.selectbox(label, opts, key=f"tbl_{col_name}")
+    selections[col_name] = sel
+    if sel != 'Todos':
+        filtered_table = filtered_table[filtered_table[col_name] == sel]
+
+# Renombrar y mostrar
+display_df = filtered_table.rename(columns={
+    'posicion':'Torre',
+    'saltador':'Saltador',
+    'ubicacion':'Zona',
+    'cant_line':'Cant Lines',
+    'desc':'Descripción',
+    'tipo_line':'Tipo'
+})
+cols_order = ['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']
+st.dataframe(display_df[cols_order].reset_index(drop=True))

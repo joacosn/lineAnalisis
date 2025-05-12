@@ -108,28 +108,27 @@ with c2:
     txt2 = bar2.mark_text(dy=-5,color='white').encode(text='cnt:Q')
     st.altair_chart((bar2+txt2).properties(height=400), use_container_width=True)
 
-# 10. Jugadores por zona de cancha (stacked bar with labels)
+# 10. Jugadores por zona de cancha (stacked bar Absolute count labels)
 st.subheader('Jugadores utilizados según zona de la cancha')
 zone_counts = df_chart.groupby(['ubicacion', player_col]).size().reset_index(name='count')
 if not zone_counts.empty:
-    stacked = alt.Chart(zone_counts).mark_bar().encode(
+    # Absolute stacked bar with labels per segment
+    base = alt.Chart(zone_counts).mark_bar().encode(
         x=alt.X('ubicacion:N', title='Zona'),
-        y=alt.Y('count:Q', stack='normalize', title='Porcentaje'),
+        y=alt.Y('count:Q', title=None, axis=None),
         color=alt.Color(f'{player_col}:N', title='Jugadores'),
         tooltip=['ubicacion', player_col, 'count']
     )
-    # Overlay total labels (absolute counts)
-    totals = zone_counts.groupby('ubicacion')['count'].sum().reset_index()
-    labels = alt.Chart(totals).mark_text(dy=-10, color='black').encode(
-        x='ubicacion:N',
-        y=alt.value(1),  # top of stack (100%)
+    # Text labels centered in each segment
+    text = alt.Chart(zone_counts).mark_text(color='black', size=12).encode(
+        x=alt.X('ubicacion:N'),
+        y=alt.Y('count:Q', stack='center'),
         text=alt.Text('count:Q', format='d')
     )
-    st.altair_chart((stacked+labels).properties(height=350), use_container_width=True)
+    st.altair_chart((base + text).properties(height=350), use_container_width=True)
 else:
     st.info('Sin datos para graficar jugadores por zona.')
-
-# 11. Zone selector + Pie (df_chart)
+# 11. Zone selector + Pie. Zone selector + Pie (df_chart)
 st.subheader('Selecciona la zona de la cancha')
 btns, spacer, piec = st.columns([1,0.5,3])
 with btns:

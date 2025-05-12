@@ -96,8 +96,8 @@ with c1:
         x=alt.X('pos:N', title='Torre'),
         y=alt.Y('cnt:Q', title='Cantidad', axis=alt.Axis(format='d'))
     )
-    txt = bar.mark_text(dy=-5,color='white').encode(text='cnt:Q')
-    st.altair_chart((bar+txt).properties(height=400), use_container_width=True)
+    txt = bar.mark_text(dy=-5, color='white').encode(text='cnt:Q')
+    st.altair_chart((bar + txt).properties(height=400), use_container_width=True)
 with c2:
     st.subheader('Lines por Saltador')
     sc = df_chart['saltador'].value_counts().reset_index(); sc.columns=['salt','cnt']
@@ -105,8 +105,8 @@ with c2:
         x=alt.X('salt:N', title='Saltador'),
         y=alt.Y('cnt:Q', title='Cantidad', axis=alt.Axis(format='d'))
     )
-    txt2 = bar2.mark_text(dy=-5,color='white').encode(text='cnt:Q')
-    st.altair_chart((bar2+txt2).properties(height=400), use_container_width=True)
+    txt2 = bar2.mark_text(dy=-5, color='white').encode(text='cnt:Q')
+    st.altair_chart((bar2 + txt2).properties(height=400), use_container_width=True)
 
 # 10. Jugadores por zona de la cancha (barras apiladas con etiquetas internas)
 st.subheader('Jugadores utilizados según zona de la cancha')
@@ -119,19 +119,22 @@ if not zone_counts.empty:
         color=alt.Color(f'{player_col}:O', title='Jugadores'),
         tooltip=['ubicacion', player_col, 'count']
     )
-    # Etiquetas centradas usando transform_stack para obtener y0 y y1
-    labels = base.transform_stack(
-        'count', as_=['y0','y1'], groupby=['ubicacion']
+    # Etiquetas centradas usando transform_stack y transform_calculate
+    labels = alt.Chart(zone_counts).transform_stack(
+        stack='count', as_=['y0','y1'], groupby=['ubicacion']
     ).transform_calculate(
         mid='(datum.y0 + datum.y1) / 2'
     ).mark_text(size=12, color='white').encode(
-        y='mid:Q',
+        x=alt.X('ubicacion:N'),
+        y=alt.Y('mid:Q'),
+        detail=alt.Detail(f'{player_col}:O'),
         text=alt.Text('count:Q', format='d')
     )
     st.altair_chart((base + labels).properties(height=350), use_container_width=True)
 else:
     st.info('Sin datos para graficar jugadores por zona.')
-# 11. Zone selector + Pie. Zone selector + Pie. Zone selector + Pie (df_chart)
+
+# 11. Zone selector + Pie
 st.subheader('Selecciona la zona de la cancha')
 btns, spacer, piec = st.columns([1,0.5,3])
 with btns:
@@ -163,4 +166,5 @@ for (lbl,col_name),col in zip(filter_cols,cols):
 display = filtered_table.rename(columns={
     'posicion':'Torre','saltador':'Saltador','ubicacion':'Zona','cant_line':'Cant Lines','desc':'Descripción','tipo_line':'Tipo'
 })
+
 st.dataframe(display[['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']].reset_index(drop=True))

@@ -104,7 +104,7 @@ with c2:
 
 # 10. Zone selector + Pie
 st.subheader('Selecciona la zona de la cancha')
-btns, piec = st.columns([1,3])
+btns, piec = st.columns([1,0,3])
 with btns:
     for z in ['50-22','22-5','5']:
         if st.button(z):

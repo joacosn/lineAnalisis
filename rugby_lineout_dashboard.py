@@ -118,19 +118,18 @@ if not zone_counts.empty:
         color=alt.Color(f'{player_col}:O', title='Jugadores'),
         tooltip=['ubicacion', player_col, 'count']
     )
-    labels = alt.Chart(zone_counts).transform_window(
-        cumulative='sum(count)',
+    labels = alt.Chart(zone_counts).transform_stack(
+        stack='count',
         groupby=['ubicacion'],
-        sort=[alt.SortField(field='count', order='ascending')]
+        as_=['y0','y1']
     ).transform_calculate(
-        mid='datum.cumulative - datum.count/2'
+        mid='(datum.y0 + datum.y1) / 2'
     ).mark_text(size=12, color='white').encode(
         x='ubicacion:N',
-        y=alt.Y('mid:Q', title=None, axis=None),
-        detail=alt.Detail(f'{player_col}:O'),
+        y='mid:Q',
         text=alt.Text('count:Q', format='d')
     )
-    st.altair_chart((base + labels).properties(height=350), use_container_width=True)
+    st.altair_chart((base + labels).properties(height=350), use_container_width=True)((base + labels).properties(height=350), use_container_width=True)
 else:
     st.info('Sin datos para graficar jugadores por zona.')
 # 11. Zone selector + Pie

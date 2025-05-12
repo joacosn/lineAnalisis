@@ -105,13 +105,7 @@ kpi_cards = "<div class='kpi-container'>"
 for title, value in generated_kpis:
     kpi_cards += f"<div class='kpi-card'><div class='kpi-title'>{title}</div><div class='kpi-value'>{value}</div></div>"
 kpi_cards += "</div>"
-st.markdown(kpi_cards, unsafe_allow_html=True)(
-    "<div class='kpi-container'>"
-    f"<div class='kpi-card'><div class='kpi-title'>Saltador más usado</div><div class='kpi-value'>{k1}</div></div>"
-    f"<div class='kpi-card'><div class='kpi-title'>Posición más usada</div><div class='kpi-value'>{k2}</div></div>"
-    f"<div class='kpi-card'><div class='kpi-title'>Total Lineouts</div><div class='kpi-value'>{k3}</div></div>"
-    "</div>", unsafe_allow_html=True
-)
+st.markdown(kpi_cards, unsafe_allow_html=True)
 
 # 9. Bar Charts (using df_chart)
 c1, _, c2 = st.columns([1,0.02,1])

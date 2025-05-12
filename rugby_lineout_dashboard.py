@@ -112,22 +112,17 @@ with c2:
 st.subheader('Jugadores utilizados según zona de la cancha')
 zone_counts = df_chart.groupby(['ubicacion', player_col]).size().reset_index(name='count')
 if not zone_counts.empty:
-    # Absolute stacked bar with labels per segment
     base = alt.Chart(zone_counts).mark_bar().encode(
         x=alt.X('ubicacion:N', title='Zona'),
         y=alt.Y('count:Q', title=None, axis=None),
         color=alt.Color(f'{player_col}:N', title='Jugadores'),
         tooltip=['ubicacion', player_col, 'count']
     )
-    # Text labels centered in each segment (in white for contrast)
+    # Text labels centered in each segment
     text = alt.Chart(zone_counts).mark_text(color='white', size=12).encode(
         x=alt.X('ubicacion:N'),
         y=alt.Y('count:Q', stack='center'),
-        detail=alt.Detail(f'{player_col}:O'),  # ensure correct stacking per group
-        text=alt.Text('count:Q', format='d')
-    ).encode(
-        x=alt.X('ubicacion:N'),
-        y=alt.Y('count:Q', stack='center'),
+        detail=f'{player_col}:O',
         text=alt.Text('count:Q', format='d')
     )
     st.altair_chart((base + text).properties(height=350), use_container_width=True)

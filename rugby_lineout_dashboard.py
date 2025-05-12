@@ -108,7 +108,7 @@ with c2:
     txt2 = bar2.mark_text(dy=-5,color='white').encode(text='cnt:Q')
     st.altair_chart((bar2+txt2).properties(height=400), use_container_width=True)
 
-# 10. Jugadores por zona de cancha (stacked bar Absolute count labels)
+# 10. Jugadores por zona de cancha (stacked bar con etiquetas por segmento)
 st.subheader('Jugadores utilizados según zona de la cancha')
 zone_counts = df_chart.groupby(['ubicacion', player_col]).size().reset_index(name='count')
 if not zone_counts.empty:
@@ -118,17 +118,19 @@ if not zone_counts.empty:
         color=alt.Color(f'{player_col}:O', title='Jugadores'),
         tooltip=['ubicacion', player_col, 'count']
     )
-    text = alt.Chart(zone_counts).mark_text(color='white', size=12).encode(
-        x='ubicacion:N',
-        y=alt.Y('count:Q', stack='center'),
-        detail=alt.Detail(f'{player_col}:N'),
-        text=alt.Text('count:Q', format='d')
-    ).encode(
-        x=alt.X('ubicacion:N'),
-        y=alt.Y('count:Q', stack='center'),
-        detail=alt.Detail(f'{player_col}:N'),
+
+    # Cálculo de posición de etiqueta (mitad de cada segmento)
+    text = base.transform_window(
+        cumulative='sum(count)',
+        groupby=['ubicacion'],
+        sort=[alt.SortField(field=player_col, op='values')]
+    ).transform_calculate(
+        y_pos='datum.cumulative - datum.count/2'
+    ).mark_text(color='white', size=12).encode(
+        y=alt.Y('y_pos:Q'),
         text=alt.Text('count:Q', format='d')
     )
+
     st.altair_chart((base + text).properties(height=350), use_container_width=True)
 else:
     st.info('Sin datos para graficar jugadores por zona.')

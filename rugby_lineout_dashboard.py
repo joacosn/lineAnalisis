@@ -150,20 +150,25 @@ with col2:
     )
     st.altair_chart((base2 + text2).properties(height=400), use_container_width=True)
 
-# 11. Zone selector buttons and pie chart side by side
-st.subheader('Selecciona la zona de la cancha')
+# 11. Zone selector and pie chart side by side
 container = st.container()
 with container:
+    # Header and layout columns
+    header_col, pie_header_col = st.columns([1,3])
+    with header_col:
+        st.subheader('Selecciona la zona de la cancha')
+    with pie_header_col:
+        # placeholder to align header
+        st.write("")
+    # Buttons and pie
     btn_col, pie_col = st.columns([1,3])
     with btn_col:
-        # Expand button column to match title width
-        st.markdown("<div style='width: 250px; display:flex;flex-direction:column;gap:10px;'>", unsafe_allow_html=True)
         for z in ['50-22','22-5','5']:
-            st.button(z, key=z, help="Seleccionar zona", on_click=lambda z=z: st.session_state.update({'zone': z}))
-        st.markdown("</div>", unsafe_allow_html=True)
+            is_selected = (st.session_state.zone == z)
+            btn_style = "" if not is_selected else "background-color: rgba(0,123,255,0.1);"
+            st.markdown(f"<button style='width: 200px; margin-bottom:8px; {btn_style}' onclick=\"window.dispatchEvent(new CustomEvent('streamlit:triggerButton', {{}},{{detail:{{key:'{z}'}}}}))\">{z}</button>", unsafe_allow_html=True)
     with pie_col:
-        # Shift title slightly right for better centering
-        st.markdown("<div style='margin-left: 40px; display:flex;flex-direction:column;align-items:center;'>", unsafe_allow_html=True)
+        st.markdown("<div style='display:flex;flex-direction:column;align-items:center;margin-left:40px;'>", unsafe_allow_html=True)
         st.markdown(f"<h3>Torres en {st.session_state.zone}m</h3>", unsafe_allow_html=True)
         zone_df = subset[subset['ubicacion'] == st.session_state.zone]
         if zone_df.empty:
@@ -176,7 +181,7 @@ with container:
             fig.update_layout(showlegend=True, legend_title_text='Torre', margin=dict(l=0, r=0, t=0, b=0))
             st.plotly_chart(fig, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
-# 12. Tabla de detalle. Tabla de detalle Tabla de detalle
+# 12. Tabla de detalle. Tabla de detalle. Tabla de detalle Tabla de detalle
 st.subheader('Detalle Lines')
 filters = {'Tipo':'tipo_line','Torre':'posicion','Saltador':'saltador','Zona':'ubicacion'}
 filtered = subset.copy()

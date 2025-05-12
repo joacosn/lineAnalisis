@@ -99,7 +99,7 @@ kpi1 = safe_mode(subset['saltador'])
 kpi2 = safe_mode(subset['posicion'])
 kpi3 = int(subset['cant_line'].count())
 
-# KPI container: responsive stack on mobile
+# KPI container: responsive—one row desktop, stacked mobile
 st.markdown(
     "<div class='kpi-container'>"
     f"<div class='kpi-card'><div class='kpi-title'>Saltador más usado</div><div class='kpi-value'>{kpi1}</div></div>"
@@ -107,16 +107,8 @@ st.markdown(
     f"<div class='kpi-card'><div class='kpi-title'>Total Lineouts</div><div class='kpi-value'>{kpi3}</div></div>"
     "</div>", unsafe_allow_html=True
 )
-# KPI container: responsive stack on mobile
-st.markdown(
-    "<div class='kpi-container'>"
-    f"<div class='kpi-card'><div class='kpi-title'>Saltador más usado</div><div class='kpi-value'>{kpi1}</div></div>"
-    f"<div class='kpi-card'><div class='kpi-title'>Posición más usada</div><div class='kpi-value'>{kpi2}</div></div>"
-    f"<div class='kpi-card'><div class='kpi-title'>Total Lineouts</div><div class='kpi-value'>{kpi3}</div></div>"
-    "</div>", unsafe_allow_html=True
-)
-
-# 10. Charts Charts
+# 10. Charts
+ Charts Charts
 col1, _, col2 = st.columns([1, 0.02, 1])
 with col1:
     st.subheader('Lines por Posición')

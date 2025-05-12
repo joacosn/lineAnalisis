@@ -103,23 +103,33 @@ with c2:
     st.altair_chart((chart2+text2).properties(height=400),use_container_width=True)
 
 # 10. Zone selector + Pie
+# Use responsive flex container for buttons
 st.subheader('Selecciona la zona de la cancha')
-btns, piec = st.columns([1,3])
-with btns:
-    for z in ['50-22','22-5','5']:
-        if st.button(z): st.session_state.zone=z
-with piec:
-    # st.subheader(f'Torres en {st.session_state.zone}m')
-    zd = df[df['ubicacion']==st.session_state.zone]
-    if zd.empty:
-        st.info('Sin datos para esta zona.')
-    else:
-        pdata=zd['posicion'].value_counts().reset_index();pdata.columns=['pos','cnt']
-        fig=px.pie(pdata,names='pos',values='cnt',hole=0.4)
-        fig.update_traces(textinfo='percent+value',textposition='inside')
-        st.plotly_chart(fig,use_container_width=True)
-
-# 11. Tabla
+container = st.container()
+with container:
+    btns_html = ['50-22','22-5','5']
+    # Render buttons with custom container
+    st.markdown(
+        "<div class='zone-buttons'>" +
+        "".join([
+            f"<button class='zone-btn' onclick='window.dispatchEvent(new CustomEvent(\"streamlit:setComponentValue\", {{}}, {{detail:{{key: \"zone\", value: \"{z}\"}}}}))'>{z}</button>" for z in btns_html
+        ]) +
+        "</div>", unsafe_allow_html=True
+    )
+    st.session_state.zone = st.session_state.get('zone', '50-22')
+    # Pie chart next to buttons
+    pie_col = st.columns([3,1])[0]
+    with pie_col:
+        st.subheader(f'Torres en {st.session_state.zone}m')
+        zd = df[df['ubicacion'] == st.session_state.zone]
+        if zd.empty:
+            st.info('Sin datos para esta zona.')
+        else:
+            pdata = zd['posicion'].value_counts().reset_index(); pdata.columns = ['pos','cnt']
+            fig = px.pie(pdata, names='pos', values='cnt', hole=0.4)
+            fig.update_traces(textinfo='percent+value', textposition='inside')
+            st.plotly_chart(fig, use_container_width=True)
+# 11. Tabla. Tabla
 st.subheader('Detalle Lines')
 filters={'Tipo':'tipo_line','Torre':'posicion','Saltador':'saltador','Zona':'ubicacion'}
 tab=df.copy()

@@ -156,14 +156,14 @@ container = st.container()
 with container:
     btn_col, pie_col = st.columns([1,3])
     with btn_col:
-        st.markdown("<div style='display:flex;flex-direction:column;gap:10px;'>", unsafe_allow_html=True)
+        # Expand button column to match title width
+        st.markdown("<div style='width: 250px; display:flex;flex-direction:column;gap:10px;'>", unsafe_allow_html=True)
         for z in ['50-22','22-5','5']:
-            clicked = st.button(z, key=z, help="Seleccionar zona", on_click=lambda z=z: st.session_state.update({'zone': z}))
+            st.button(z, key=z, help="Seleccionar zona", on_click=lambda z=z: st.session_state.update({'zone': z}))
         st.markdown("</div>", unsafe_allow_html=True)
     with pie_col:
-        # Align title and pie centrally
-        st.markdown(f"<div style='display:flex;flex-direction:column;align-items:center;'>",
-                    unsafe_allow_html=True)
+        # Shift title slightly right for better centering
+        st.markdown("<div style='margin-left: 40px; display:flex;flex-direction:column;align-items:center;'>", unsafe_allow_html=True)
         st.markdown(f"<h3>Torres en {st.session_state.zone}m</h3>", unsafe_allow_html=True)
         zone_df = subset[subset['ubicacion'] == st.session_state.zone]
         if zone_df.empty:
@@ -173,10 +173,10 @@ with container:
             pie_data.columns = ['posicion','count']
             fig = px.pie(pie_data, names='posicion', values='count', hole=0.4)
             fig.update_traces(textinfo='percent+value', textposition='inside', textfont_size=14)
-            fig.update_layout(showlegend=True, legend_title_text='Torre')
+            fig.update_layout(showlegend=True, legend_title_text='Torre', margin=dict(l=0, r=0, t=0, b=0))
             st.plotly_chart(fig, use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
-# 12. Tabla de detalle Tabla de detalle
+# 12. Tabla de detalle. Tabla de detalle Tabla de detalle
 st.subheader('Detalle Lines')
 filters = {'Tipo':'tipo_line','Torre':'posicion','Saltador':'saltador','Zona':'ubicacion'}
 filtered = subset.copy()

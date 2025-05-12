@@ -20,8 +20,14 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
 .kpi-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 .kpi-value { font-size: 36px; font-weight: 700; }
 .stButton>button { min-width: 100px !important; }
+/* Add light grey border to dropdowns */
+[data-testid="stSelectbox"] > div > div {
+    border: 1px solid #ccc !important;
+    border-radius: 4px !important;
+    padding: 4px 8px !important;
+}
 """
-st.markdown(f"<style>{CUSTOM_CSS}</style>", unsafe_allow_html=True)
+st.markdown(f"<style>{CUSTOM_CSS}</style>", unsafe_allow_html=True)(f"<style>{CUSTOM_CSS}</style>", unsafe_allow_html=True)
 
 # 3. Dark-mode inversion (optional)
 st.markdown(

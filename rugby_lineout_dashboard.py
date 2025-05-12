@@ -151,6 +151,7 @@ with col2:
     st.altair_chart((base2 + text2).properties(height=400), use_container_width=True)
 
 # 11. Zone selector buttons and pie chart side by side
+st.subheader('Selecciona la zona de la cancha')
 container = st.container()
 with container:
     btn_col, pie_col = st.columns([1,3])

@@ -117,10 +117,6 @@ if not zone_counts.empty:
         y=alt.Y('count:Q', title=None, axis=None, stack='zero'),
         color=alt.Color(f'{player_col}:O', title='Jugadores'),
         tooltip=['ubicacion', player_col, 'count']
-    ),
-        y=alt.Y('count:Q', title=None, axis=None),
-        color=alt.Color(f'{player_col}:N', title='Jugadores'),
-        tooltip=['ubicacion', player_col, 'count']
     )
     text = alt.Chart(zone_counts).mark_text(color='white', size=12).encode(
         x=alt.X('ubicacion:N'),

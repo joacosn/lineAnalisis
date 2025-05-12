@@ -115,6 +115,10 @@ if not zone_counts.empty:
 else:
     st.info('Sin datos')
 
+# Initialize zone in session state
+if 'zone' not in st.session_state:
+    st.session_state.zone = '50-22'
+
 # 11. Zone selector + Pie
 st.subheader('Selecciona la zona de la cancha')
 btns, spacer, piec = st.columns([1, 0.5, 3])

@@ -79,11 +79,11 @@ if 'zone' not in st.session_state:
     st.session_state.zone = default_zone
 
 # 8. KPIs (using df_chart)
-# Calculate additional analysis: average number of players per line if available
-avg_players = None
-if 'num_players' in df_chart.columns:
-    avg_players = df_chart['num_players'].mean()
+# Assuming `cant_line` holds the number of players per line for this analysis
+player_col = 'cant_line'
+avg_players = df_chart[player_col].mean()
 
+# helper to get mode or dash
 def safe_mode(series: pd.Series):
     s2 = series.dropna()
     return s2.mode().iloc[0] if not s2.empty else '—'
@@ -91,23 +91,30 @@ def safe_mode(series: pd.Series):
 k1 = safe_mode(df_chart['saltador'])
 k2 = safe_mode(df_chart['posicion'])
 k3 = int(df_chart['cant_line'].count())
-# Include fourth KPI if avg_players is computed
 generated_kpis = [
     ("Saltador más usado", k1),
     ("Posición más usada", k2),
-    ("Total Lineouts", k3)
+    ("Total Lineouts", k3),
+    ("Promedio Jugadores", f"{avg_players:.1f}")
 ]
-if avg_players is not None:
-    generated_kpis.append(("Promedio Jugadores", f"{avg_players:.1f}"))
 
 # Render KPI cards
 kpi_cards = "<div class='kpi-container'>"
 for title, value in generated_kpis:
     kpi_cards += f"<div class='kpi-card'><div class='kpi-title'>{title}</div><div class='kpi-value'>{value}</div></div>"
 kpi_cards += "</div>"
-st.markdown(kpi_cards, unsafe_allow_html=True)
-
-# 9. Bar Charts (using df_chart)
+st.markdown(kpi_cards, unsafe_allow_html=True) Players-per-line distribution (if available)
+if player_col:
+    st.subheader(f"Distribución de {player_col}")
+    dist = df_chart[player_col].value_counts().reset_index()
+    dist.columns = [player_col, 'count']
+    fig_dist = alt.Chart(dist).mark_bar(color='#86BC25').encode(
+        x=alt.X(f'{player_col}:N', title=player_col, axis=alt.Axis(labelAngle=0)),
+        y=alt.Y('count:Q', title='Frecuencia', axis=alt.Axis(format='d'))
+    )
+    text_dist = fig_dist.mark_text(dy=-5, color='black').encode(text='count:Q')
+    st.altair_chart((fig_dist + text_dist).properties(height=300), use_container_width=True)
+# 10. Bar Charts (using df_chart) Bar Charts (using df_chart)
 c1, _, c2 = st.columns([1,0.02,1])
 with c1:
     st.subheader('Lines por Posición')

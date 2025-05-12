@@ -118,7 +118,6 @@ if not zone_counts.empty:
         color=alt.Color(f'{player_col}:N', title='Jugadores'),
         tooltip=['ubicacion', player_col, 'count']
     )
-    # Text labels centered in each segment with detail channel for correct grouping
     text = alt.Chart(zone_counts).mark_text(color='white', size=12).encode(
         x=alt.X('ubicacion:N'),
         y=alt.Y('count:Q', stack='center'),
@@ -127,10 +126,8 @@ if not zone_counts.empty:
     )
     st.altair_chart((base + text).properties(height=350), use_container_width=True)
 else:
-    st.info('Sin datos para graficar jugadores por zona.')((base + text).properties(height=350), use_container_width=True)
-else:
     st.info('Sin datos para graficar jugadores por zona.')
-# 11. Zone selector + Pie. Zone selector + Pie (df_chart)
+# 11. Zone selector + Pie. Zone selector + Pie. Zone selector + Pie (df_chart)
 st.subheader('Selecciona la zona de la cancha')
 btns, spacer, piec = st.columns([1,0.5,3])
 with btns:

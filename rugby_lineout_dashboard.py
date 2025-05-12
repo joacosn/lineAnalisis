@@ -114,3 +114,43 @@ if not zone_counts.empty:
     st.altair_chart((base+labels).properties(height=350),use_container_width=True)
 else:
     st.info('Sin datos')
+
+# 11. Zone selector + Pie
+st.subheader('Selecciona la zona de la cancha')
+btns, spacer, piec = st.columns([1, 0.5, 3])
+with btns:
+    for z in ['50-22', '22-5', '5']:
+        if st.button(z):
+            st.session_state.zone = z
+with piec:
+    st.subheader(f'Torres en {st.session_state.zone}m')
+    zd = df_chart[df_chart['ubicacion'] == st.session_state.zone]
+    if zd.empty:
+        st.info('Sin datos para esta zona.')
+    else:
+        pdata = zd['posicion'].value_counts().reset_index()
+        pdata.columns = ['pos', 'cnt']
+        fig = px.pie(pdata, names='pos', values='cnt', hole=0.4)
+        fig.update_traces(textinfo='percent+value', textposition='inside')
+        st.plotly_chart(fig, use_container_width=True)
+
+# 12. Detalle Lines (cascading filters)
+st.subheader('Detalle Lines')
+filtered_table = df_match.copy()
+filter_cols = [('Tipo','tipo_line'),('Torre','posicion'),('Saltador','saltador'),('Zona','ubicacion')]
+cols = st.columns(len(filter_cols))
+for (lbl, col_name), col in zip(filter_cols, cols):
+    opts = ['Todos'] + sorted(filtered_table[col_name].dropna().unique())
+    sel = col.selectbox(lbl, opts, key=f"tbl_{col_name}")
+    if sel != 'Todos':
+        filtered_table = filtered_table[filtered_table[col_name] == sel]
+
+display = filtered_table.rename(columns={
+    'posicion':'Torre',
+    'saltador':'Saltador',
+    'ubicacion':'Zona',
+    'cant_line':'Cant Lines',
+    'desc':'Descripción',
+    'tipo_line':'Tipo'
+})
+st.dataframe(display[['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']].reset_index(drop=True))

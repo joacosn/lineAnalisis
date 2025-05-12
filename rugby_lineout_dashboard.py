@@ -95,7 +95,7 @@ generated_kpis = [
     ("Saltador más usado", k1),
     ("Posición más usada", k2),
     ("Total Lineouts", k3),
-    ("Promedio Jugadores x line", f"{avg_players:.1f}")
+    ("Promedio Jugadores", f"{avg_players:.1f}")
 ]
 
 # Render KPI cards
@@ -137,7 +137,41 @@ with c2:
     text2 = chart2.mark_text(dy=-5, color='white').encode(text='cnt:Q')
     st.altair_chart((chart2+text2).properties(height=400), use_container_width=True)
 
-# 10. Zone selector + Pie (using df_chart)
+# 10. Sankey Chart: flow from Torre to Saltador
+# Build sankey data
+towers = df_chart['posicion'].astype(str)
+saltadores = df_chart['saltador'].astype(str)
+# Create list of unique labels
+labels = list(pd.concat([towers, saltadores]).unique())
+# Map labels to indices
+label_indices = {label: i for i, label in enumerate(labels)}
+# Aggregate counts for each tower-saltador pair
+pair_counts = df_chart.groupby(['posicion','saltador']).size().reset_index(name='count')
+# Prepare sankey inputs
+source = pair_counts['posicion'].astype(str).map(label_indices)
+target = pair_counts['saltador'].astype(str).map(label_indices)
+value  = pair_counts['count']
+
+import plotly.graph_objects as go
+fig_sankey = go.Figure(data=[
+    go.Sankey(
+        node = dict(
+            label = labels,
+            pad=15,
+            thickness=20,
+            line=dict(color="black", width=0.5)
+        ),
+        link = dict(
+            source = source,
+            target = target,
+            value  = value
+        )
+    )
+])
+st.subheader('Flujo Torre → Saltador')
+st.plotly_chart(fig_sankey, use_container_width=True)
+
+# 11. Zone selector + Pie (using df_chart)
 st.subheader('Selecciona la zona de la cancha')
 btns, spacer, piec = st.columns([1,0.5,3])
 with btns:

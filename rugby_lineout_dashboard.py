@@ -15,14 +15,27 @@ CUSTOM_CSS = """
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif;
 }
+.kpi-container {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+.kpi-container .kpi-card {
+    flex: 1 1 0;
+    min-width: 0;
+}
+@media (max-width: 600px) {
+    .kpi-container {
+        flex-direction: column;
+    }
+}
 .kpi-card {
     padding: 20px;
     border-radius: 15px;
     text-align: center;
     box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     transition: all 0.3s ease;
-    flex: 1 1 300px;
-    min-width: 240px;
 }
 .kpi-title { font-size: 16px; font-weight: 600; margin-bottom: 8px; }
 .kpi-value { font-size: 36px; font-weight: 700; }

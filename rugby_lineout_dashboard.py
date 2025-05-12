@@ -44,125 +44,73 @@ except FileNotFoundError:
     st.title("Análisis Lines 2025")
 
 # 5. Load data
-@st.cache_data
 def load_data() -> pd.DataFrame:
-    try:
-        return pd.read_excel('Lines_IPR.xlsx')
-    except Exception as e:
-        st.error(f"Error al cargar datos: {e}")
-        return pd.DataFrame()
+    return pd.read_excel('Lines_IPR.xlsx')
 
 df = load_data()
 if df.empty:
     st.stop()
 
-# 6. Primary filters
+# 6. Filters
 partidos = sorted(df['partido'].dropna().unique())
 selected_match = st.selectbox('Selecciona un partido', partidos)
-df_match = df[df['partido'] == selected_match]
-
-tipos = ['Todos'] + sorted(df_match['tipo_line'].dropna().unique()) if 'tipo_line' in df_match.columns else ['Todos']
+df_match = df[df['partido']==selected_match]
+tipos = ['Todos'] + sorted(df_match['tipo_line'].dropna().unique())
 selected_tipo = st.selectbox('Tipo de Line', tipos)
+df_chart = df_match[df_match['tipo_line']==selected_tipo] if selected_tipo!='Todos' else df_match
 
-df_chart = df_match[df_match['tipo_line'] == selected_tipo] if selected_tipo != 'Todos' else df_match.copy()
-
-# 7. Zone session
-if 'zone' not in st.session_state:
-    st.session_state.zone = '50-22'
-
-# 8. KPIs
+# 7. KPIs
 player_col = 'cant_line'
 avg_players = df_chart[player_col].mean()
 
 def safe_mode(s):
-    s2 = s.dropna(); return s2.mode().iloc[0] if not s2.empty else '—'
+    s2=s.dropna(); return s2.mode().iloc[0] if not s2.empty else '—'
 
-kpis = [
+kpis=[
     ("Saltador más usado", safe_mode(df_chart['saltador'])),
     ("Posición más usada", safe_mode(df_chart['posicion'])),
-    ("Total Lineouts", int(df_chart[player_col].count())),
+    ("Total Lineouts", df_chart[player_col].count()),
     ("Promedio Jugadores", f"{avg_players:.1f}")
 ]
-html_kpi = "<div class='kpi-container'>" + "".join([
-    f"<div class='kpi-card'><div class='kpi-title'>{t}</div><div class='kpi-value'>{v}</div></div>" for t,v in kpis]) + "</div>"
+html_kpi="<div class='kpi-container'>"+"".join([f"<div class='kpi-card'><div class='kpi-title'>{t}</div><div class='kpi-value'>{v}</div></div>" for t,v in kpis])+"</div>"
 st.markdown(html_kpi, unsafe_allow_html=True)
 
-# 9. Bar Charts
-c1, _, c2 = st.columns([1,0.02,1])
+# 8. Bar charts
+c1,_,c2=st.columns([1,0.02,1])
 with c1:
     st.subheader('Lines por Posición')
-    pc = df_chart['posicion'].value_counts().reset_index(); pc.columns=['pos','cnt']
-    bar = alt.Chart(pc).mark_bar(color='#4C78A8').encode(
-        x=alt.X('pos:N', title='Torre'),
-        y=alt.Y('cnt:Q', title='Cantidad', axis=alt.Axis(format='d'))
-    )
-    txt = bar.mark_text(dy=-5, color='white').encode(text='cnt:Q')
-    st.altair_chart((bar + txt).properties(height=400), use_container_width=True)
+    pc=df_chart['posicion'].value_counts().reset_index(name='cnt')
+    bar=alt.Chart(pc).mark_bar().encode(x='posicion:N', y=alt.Y('cnt:Q',axis=alt.Axis(format='d')), tooltip=['posicion','cnt'])
+    text=bar.mark_text(dy=-5,color='white').encode(text='cnt:Q')
+    st.altair_chart((bar+text).properties(height=400),use_container_width=True)
 with c2:
     st.subheader('Lines por Saltador')
-    sc = df_chart['saltador'].value_counts().reset_index(); sc.columns=['salt','cnt']
-    bar2 = alt.Chart(sc).mark_bar(color='#F58518').encode(
-        x=alt.X('salt:N', title='Saltador'),
-        y=alt.Y('cnt:Q', title='Cantidad', axis=alt.Axis(format='d'))
-    )
-    txt2 = bar2.mark_text(dy=-5, color='white').encode(text='cnt:Q')
-    st.altair_chart((bar2 + txt2).properties(height=400), use_container_width=True)
+    sc=df_chart['saltador'].value_counts().reset_index(name='cnt')
+    bar2=alt.Chart(sc).mark_bar().encode(x='saltador:N', y=alt.Y('cnt:Q',axis=alt.Axis(format='d')), tooltip=['saltador','cnt'])
+    text2=bar2.mark_text(dy=-5,color='white').encode(text='cnt:Q')
+    st.altair_chart((bar2+text2).properties(height=400),use_container_width=True)
 
-# 10. Jugadores por zona de la cancha (barras apiladas con etiquetas internas)
+# 9. Jugadores por zona - corrected
 st.subheader('Jugadores utilizados según zona de la cancha')
-zone_counts = df_chart.groupby(['ubicacion', player_col]).size().reset_index(name='count')
+zone_counts = df_chart.groupby(['ubicacion',player_col]).size().reset_index(name='count')
 if not zone_counts.empty:
-    base = alt.Chart(zone_counts).mark_bar().encode(
-        x=alt.X('ubicacion:N', title='Zona'),
-        y=alt.Y('count:Q', stack='zero', axis=None, title=None),
-        color=alt.Color(f'{player_col}:O', title='Jugadores'),
-        tooltip=['ubicacion', player_col, 'count']
+    base=alt.Chart(zone_counts).mark_bar().encode(
+        x='ubicacion:N',
+        y=alt.Y('count:Q',stack='zero',axis=None),
+        color=alt.Color(f'{player_col}:O'),
+        tooltip=['ubicacion',player_col,'count']
     )
-    labels = alt.Chart(zone_counts).transform_stack(
+    labels=alt.Chart(zone_counts).transform_stack(
         stack='count',
         groupby=['ubicacion'],
         as_=['y0','y1']
     ).transform_calculate(
-        mid='(datum.y0 + datum.y1) / 2'
-    ).mark_text(size=12, color='white').encode(
+        mid='(datum.y0+datum.y1)/2'
+    ).mark_text(color='white',size=12).encode(
         x='ubicacion:N',
         y='mid:Q',
-        text=alt.Text('count:Q', format='d')
+        text='count:Q'
     )
-    st.altair_chart((base + labels).properties(height=350), use_container_width=True)((base + labels).properties(height=350), use_container_width=True)
+    st.altair_chart((base+labels).properties(height=350),use_container_width=True)
 else:
-    st.info('Sin datos para graficar jugadores por zona.')
-# 11. Zone selector + Pie
-st.subheader('Selecciona la zona de la cancha')
-btns, spacer, piec = st.columns([1,0.5,3])
-with btns:
-    for z in ['50-22','22-5','5']:
-        if st.button(z):
-            st.session_state.zone = z
-with piec:
-    st.subheader(f'Torres en {st.session_state.zone}m')
-    zd = df_chart[df_chart['ubicacion'] == st.session_state.zone]
-    if zd.empty:
-        st.info('Sin datos para esta zona.')
-    else:
-        pdata = zd['posicion'].value_counts().reset_index(); pdata.columns=['pos','cnt']
-        fig = px.pie(pdata, names='pos', values='cnt', hole=0.4)
-        fig.update_traces(textinfo='percent+value', textposition='inside')
-        st.plotly_chart(fig, use_container_width=True)
-
-# 12. Detalle Lines (cascading filters)
-st.subheader('Detalle Lines')
-filtered_table = df_match.copy()
-filter_cols = [('Tipo','tipo_line'),('Torre','posicion'),('Saltador','saltador'),('Zona','ubicacion')]
-cols = st.columns(len(filter_cols))
-for (lbl,col_name),col in zip(filter_cols,cols):
-    opts = ['Todos'] + sorted(filtered_table[col_name].dropna().unique())
-    sel = col.selectbox(lbl, opts, key=f"tbl_{col_name}")
-    if sel!='Todos':
-        filtered_table = filtered_table[filtered_table[col_name]==sel]
-
-display = filtered_table.rename(columns={
-    'posicion':'Torre','saltador':'Saltador','ubicacion':'Zona','cant_line':'Cant Lines','desc':'Descripción','tipo_line':'Tipo'
-})
-
-st.dataframe(display[['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']].reset_index(drop=True))
+    st.info('Sin datos')

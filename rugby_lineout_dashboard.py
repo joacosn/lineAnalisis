@@ -137,7 +137,21 @@ with c2:
     text2 = chart2.mark_text(dy=-5, color='white').encode(text='cnt:Q')
     st.altair_chart((chart2+text2).properties(height=400), use_container_width=True)
 
-# 10. Sankey Chart: flow from Torre to Saltador
+# 10. Jugadores por zona de cancha
+st.subheader('Jugadores utilizados según zona de la cancha')
+zone_counts = df_chart.groupby(['ubicacion', player_col]).size().reset_index(name='count')
+if not zone_counts.empty:
+    area_bar = alt.Chart(zone_counts).mark_bar().encode(
+        x=alt.X('ubicacion:N', title='Zona'),
+        y=alt.Y('count:Q', title='Frecuencia', axis=alt.Axis(format='d')),
+        color=alt.Color(f'{player_col}:N', title='Jugadores'),
+        tooltip=['ubicacion', player_col, 'count']
+    ).properties(height=350)
+    st.altair_chart(area_bar, use_container_width=True)
+else:
+    st.info('Sin datos para graficar jugadores por zona.')
+
+# 11. Sankey Chart: flow from Torre to Saltador
 # Build sankey data
 towers = df_chart['posicion'].astype(str)
 saltadores = df_chart['saltador'].astype(str)

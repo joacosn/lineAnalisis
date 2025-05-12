@@ -27,7 +27,7 @@ html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
     padding: 4px 8px !important;
 }
 """
-st.markdown(f"<style>{CUSTOM_CSS}</style>", unsafe_allow_html=True)(f"<style>{CUSTOM_CSS}</style>", unsafe_allow_html=True)
+st.markdown(f"<style>{CUSTOM_CSS}</style>", unsafe_allow_html=True)
 
 # 3. Dark-mode inversion (optional)
 st.markdown(

@@ -54,16 +54,33 @@ def load_data():
 df = load_data()
 if df.empty: st.stop()
 
-# 6. Filters
+# 6. Cascading Filters: partido, tipo_line, posicion, saltador, ubicacion
+# First filter: partido
 partidos = sorted(df['partido'].dropna().unique())
 sel_partido = st.selectbox('Selecciona un partido', partidos)
 df = df[df['partido']==sel_partido]
-if 'tipo_line' in df:
+# Second filter: tipo_line
+if 'tipo_line' in df.columns:
     tipos = ['Todos'] + sorted(df['tipo_line'].dropna().unique())
     sel_tipo = st.selectbox('Tipo de Line', tipos)
-    if sel_tipo!='Todos': df = df[df['tipo_line']==sel_tipo]
-
-# 7. Session for zone
+    if sel_tipo != 'Todos':
+        df = df[df['tipo_line']==sel_tipo]
+# Third filter: posicion
+posiciones = ['Todos'] + sorted(df['posicion'].dropna().unique())
+sel_pos = st.selectbox('Selecciona Torre', posiciones)
+if sel_pos != 'Todos':
+    df = df[df['posicion']==sel_pos]
+# Fourth filter: saltador
+saltadores = ['Todos'] + sorted(df['saltador'].dropna().unique())
+sel_salt = st.selectbox('Selecciona Saltador', saltadores)
+if sel_salt != 'Todos':
+    df = df[df['saltador']==sel_salt]
+# Fifth filter: ubicacion
+ubics = ['Todos'] + sorted(df['ubicacion'].dropna().unique())
+sel_ubic = st.selectbox('Selecciona Ubicación', ubics)
+if sel_ubic != 'Todos':
+    df = df[df['ubicacion']==sel_ubic]
+# 7. Session for zone Session for zone
 defaul = '50-22'
 if 'zone' not in st.session_state: st.session_state.zone = defaul
 

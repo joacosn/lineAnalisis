@@ -90,23 +90,16 @@ if 'zone' not in st.session_state:
     st.session_state.zone = '50-22'
 
 # 9. KPIs
-def safe_mode(series: pd.Series):
-    vals = series.dropna()
-    return vals.mode().iloc[0] if not vals.empty else '—'
-
-kpi1 = safe_mode(subset['saltador'])
-kpi2 = safe_mode(subset['posicion'])
-kpi3 = int(subset['cant_line'].count())
-
+# KPI container: responsive stack on mobile
 st.markdown(
-    "<div style='display:flex;gap:20px;margin-bottom:30px;'>"
+    "<div class='kpi-container'>"
     f"<div class='kpi-card'><div class='kpi-title'>Saltador más usado</div><div class='kpi-value'>{kpi1}</div></div>"
     f"<div class='kpi-card'><div class='kpi-title'>Posición más usada</div><div class='kpi-value'>{kpi2}</div></div>"
     f"<div class='kpi-card'><div class='kpi-title'>Total Lineouts</div><div class='kpi-value'>{kpi3}</div></div>"
     "</div>", unsafe_allow_html=True
 )
 
-# 10. Charts
+# 10. Charts Charts
 col1, _, col2 = st.columns([1, 0.02, 1])
 with col1:
     st.subheader('Lines por Posición')

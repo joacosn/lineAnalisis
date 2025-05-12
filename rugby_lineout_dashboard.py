@@ -104,17 +104,7 @@ for title, value in generated_kpis:
     kpi_cards += f"<div class='kpi-card'><div class='kpi-title'>{title}</div><div class='kpi-value'>{value}</div></div>"
 kpi_cards += "</div>"
 st.markdown(kpi_cards, unsafe_allow_html=True) 
-# distribution (if available)
-if player_col:
-    st.subheader(f"Distribución de {player_col}")
-    dist = df_chart[player_col].value_counts().reset_index()
-    dist.columns = [player_col, 'count']
-    fig_dist = alt.Chart(dist).mark_bar(color='#86BC25').encode(
-        x=alt.X(f'{player_col}:N', title=player_col, axis=alt.Axis(labelAngle=0)),
-        y=alt.Y('count:Q', title='Frecuencia', axis=alt.Axis(format='d'))
-    )
-    text_dist = fig_dist.mark_text(dy=-5, color='black').encode(text='count:Q')
-    st.altair_chart((fig_dist + text_dist).properties(height=300), use_container_width=True)
+
 # 10. Bar Charts (using df_chart) Bar Charts (using df_chart)
 c1, _, c2 = st.columns([1,0.02,1])
 with c1:
@@ -135,6 +125,18 @@ with c2:
     )
     text2 = chart2.mark_text(dy=-5, color='white').encode(text='cnt:Q')
     st.altair_chart((chart2+text2).properties(height=400), use_container_width=True)
+
+# distribution (if available)
+if player_col:
+    st.subheader(f"Cant Jugadores por line")
+    dist = df_chart[player_col].value_counts().reset_index()
+    dist.columns = [player_col, 'count']
+    fig_dist = alt.Chart(dist).mark_bar(color='#86BC25').encode(
+        x=alt.X(f'{player_col}:N', title='Cant Jugadores', axis=alt.Axis(labelAngle=0)),
+        y=alt.Y('count:Q', title='Cant', axis=alt.Axis(format='d'))
+    )
+    text_dist = fig_dist.mark_text(dy=-5, color='black').encode(text='count:Q')
+    st.altair_chart((fig_dist + text_dist).properties(height=300), use_container_width=True)
 
 # 10. Zone selector + Pie (using df_chart)
 st.subheader('Selecciona la zona de la cancha')

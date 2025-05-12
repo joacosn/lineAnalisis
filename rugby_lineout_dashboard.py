@@ -153,6 +153,6 @@ for (label, col_name), col in zip(table_filters, cols):
 # Rename and display
 display_df = filtered_table.rename(columns={
     'posicion':'Torre','saltador':'Saltador','ubicacion':'Zona',
-    'cant_line':'Cant Lines','desc':'Descripción','tipo_line':'Tipo'
+    'cant_line':'Cant Jugadores','desc':'Descripción','tipo_line':'Tipo'
 })
-st.dataframe(display_df[['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']].reset_index(drop=True))
+st.dataframe(display_df[['Torre','Saltador','Zona','Cant Jugadores','Descripción','Tipo']].reset_index(drop=True))

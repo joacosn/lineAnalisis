@@ -108,8 +108,7 @@ st.markdown(
     "</div>", unsafe_allow_html=True
 )
 # 10. Charts
-Charts
-col1, _, col2 = st.columns([1, 0.02, 1])
+col1, _, col2 = st.columns([1, 0.02, 1]), col2 = st.columns([1, 0.02, 1])
 with col1:
     st.subheader('Lines por Posición')
     pos_count = subset['posicion'].value_counts().reset_index()

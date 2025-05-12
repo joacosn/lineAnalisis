@@ -109,7 +109,7 @@ with btns:
     for z in ['50-22','22-5','5']:
         if st.button(z): st.session_state.zone=z
 with piec:
-    st.subheader(f'Torres en {st.session_state.zone}m')
+    # st.subheader(f'Torres en {st.session_state.zone}m')
     zd = df[df['ubicacion']==st.session_state.zone]
     if zd.empty:
         st.info('Sin datos para esta zona.')

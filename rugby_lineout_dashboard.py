@@ -123,6 +123,11 @@ if not zone_counts.empty:
     text = alt.Chart(zone_counts).mark_text(color='white', size=12).encode(
         x=alt.X('ubicacion:N'),
         y=alt.Y('count:Q', stack='center'),
+        detail=alt.Detail(f'{player_col}:O'),  # ensure correct stacking per group
+        text=alt.Text('count:Q', format='d')
+    ).encode(
+        x=alt.X('ubicacion:N'),
+        y=alt.Y('count:Q', stack='center'),
         text=alt.Text('count:Q', format='d')
     )
     st.altair_chart((base + text).properties(height=350), use_container_width=True)

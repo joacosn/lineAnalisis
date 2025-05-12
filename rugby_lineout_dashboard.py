@@ -103,7 +103,7 @@ kpi_cards = "<div class='kpi-container'>"
 for title, value in generated_kpis:
     kpi_cards += f"<div class='kpi-card'><div class='kpi-title'>{title}</div><div class='kpi-value'>{value}</div></div>"
 kpi_cards += "</div>"
-st.markdown(kpi_cards, unsafe_allow_html=True) Players-per-line distribution (if available)
+st.markdown(kpi_cards, unsafe_allow_html=True) distribution (if available)
 if player_col:
     st.subheader(f"Distribución de {player_col}")
     dist = df_chart[player_col].value_counts().reset_index()

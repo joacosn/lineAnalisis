@@ -112,14 +112,12 @@ with c2:
 st.subheader('Jugadores utilizados según zona de la cancha')
 zone_counts = df_chart.groupby(['ubicacion', player_col]).size().reset_index(name='count')
 if not zone_counts.empty:
-    # Barra apilada absoluta
     base = alt.Chart(zone_counts).mark_bar().encode(
         x=alt.X('ubicacion:N', title='Zona'),
         y=alt.Y('count:Q', stack='zero', axis=None, title=None),
         color=alt.Color(f'{player_col}:O', title='Jugadores'),
         tooltip=['ubicacion', player_col, 'count']
     )
-    # Cálculo de posición de etiqueta usando transform_window para suma acumulada
     labels = alt.Chart(zone_counts).transform_window(
         cumulative='sum(count)',
         groupby=['ubicacion'],
@@ -134,10 +132,7 @@ if not zone_counts.empty:
     )
     st.altair_chart((base + labels).properties(height=350), use_container_width=True)
 else:
-    st.info('Sin datos para graficar jugadores por zona.')((base + labels).properties(height=350), use_container_width=True)
-else:
     st.info('Sin datos para graficar jugadores por zona.')
-
 # 11. Zone selector + Pie
 st.subheader('Selecciona la zona de la cancha')
 btns, spacer, piec = st.columns([1,0.5,3])

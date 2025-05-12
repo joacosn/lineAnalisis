@@ -79,6 +79,11 @@ if 'zone' not in st.session_state:
     st.session_state.zone = default_zone
 
 # 8. KPIs (using df_chart)
+# Calculate additional analysis: average number of players per line if available
+avg_players = None
+if 'num_players' in df_chart.columns:
+    avg_players = df_chart['num_players'].mean()
+
 def safe_mode(series: pd.Series):
     s2 = series.dropna()
     return s2.mode().iloc[0] if not s2.empty else '—'
@@ -86,7 +91,21 @@ def safe_mode(series: pd.Series):
 k1 = safe_mode(df_chart['saltador'])
 k2 = safe_mode(df_chart['posicion'])
 k3 = int(df_chart['cant_line'].count())
-st.markdown(
+# Include fourth KPI if avg_players is computed
+generated_kpis = [
+    ("Saltador más usado", k1),
+    ("Posición más usada", k2),
+    ("Total Lineouts", k3)
+]
+if avg_players is not None:
+    generated_kpis.append(("Promedio Jugadores", f"{avg_players:.1f}"))
+
+# Render KPI cards
+kpi_cards = "<div class='kpi-container'>"
+for title, value in generated_kpis:
+    kpi_cards += f"<div class='kpi-card'><div class='kpi-title'>{title}</div><div class='kpi-value'>{value}</div></div>"
+kpi_cards += "</div>"
+st.markdown(kpi_cards, unsafe_allow_html=True)(
     "<div class='kpi-container'>"
     f"<div class='kpi-card'><div class='kpi-title'>Saltador más usado</div><div class='kpi-value'>{k1}</div></div>"
     f"<div class='kpi-card'><div class='kpi-title'>Posición más usada</div><div class='kpi-value'>{k2}</div></div>"
@@ -153,6 +172,6 @@ for (label, col_name), col in zip(table_filters, cols):
 # Rename and display
 display_df = filtered_table.rename(columns={
     'posicion':'Torre','saltador':'Saltador','ubicacion':'Zona',
-    'cant_line':'Cant Jugadores','desc':'Descripción','tipo_line':'Tipo'
+    'cant_line':'Cant Lines','desc':'Descripción','tipo_line':'Tipo'
 })
-st.dataframe(display_df[['Torre','Saltador','Zona','Cant Jugadores','Descripción','Tipo']].reset_index(drop=True))
+st.dataframe(display_df[['Torre','Saltador','Zona','Cant Lines','Descripción','Tipo']].reset_index(drop=True))

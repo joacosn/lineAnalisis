@@ -115,7 +115,7 @@ with c2:
     text2 = chart2.mark_text(dy=-5, color='white').encode(text='cnt:Q')
     st.altair_chart((chart2+text2).properties(height=400), use_container_width=True)
 
-# 10. Zone selector + Pie (using df_match)
+# 10. Zone selector + Pie (using df_chart)
 st.subheader('Selecciona la zona de la cancha')
 btns, spacer, piec = st.columns([1,0.5,3])
 with btns:
@@ -124,15 +124,16 @@ with btns:
             st.session_state.zone = z
 with piec:
     st.subheader(f'Torres en {st.session_state.zone}m')
-    zd = df_match[df_match['ubicacion'] == st.session_state.zone]
+    # Use df_chart so donut also respects tipo_line filter
+    zd = df_chart[df_chart['ubicacion'] == st.session_state.zone]
     if zd.empty:
         st.info('Sin datos para esta zona.')
     else:
-        pdata = zd['posicion'].value_counts().reset_index(); pdata.columns=['pos','cnt']
+        pdata = zd['posicion'].value_counts().reset_index()
+        pdata.columns = ['pos','cnt']
         fig = px.pie(pdata, names='pos', values='cnt', hole=0.4)
         fig.update_traces(textinfo='percent+value', textposition='inside')
         st.plotly_chart(fig, use_container_width=True)
-
 # 11. Detalle Lines con filtros en cascada (using df_match)
 st.subheader('Detalle Lines')
 filtered_table = df_match.copy()
